@@ -25,10 +25,10 @@
         .section { animation: fadeInUp 0.5s cubic-bezier(0.23, 1, 0.32, 1); }
         .ios-safe { padding-top: env(safe-area-inset-top); padding-bottom: env(safe-area-inset-bottom); }
         .mature { color: #e0e7ff; }
+        #three-canvas { touch-action: none; }
     </style>
 </head>
 <body class="bg-[#0a0818] text-white overflow-hidden ios-safe">
-    <!-- Top Navigation - iOS style -->
     <nav class="bg-black/70 backdrop-blur-xl border-b border-white/10 sticky top-0 z-50" style="padding-top: env(safe-area-inset-top);">
         <div class="max-w-7xl mx-auto px-5 h-14 flex items-center justify-between">
             <div class="flex items-center gap-x-3">
@@ -40,7 +40,6 @@
                     <div class="text-[9px] text-violet-400 -mt-1 tracking-[2px] font-medium">BLACK CODE</div>
                 </div>
             </div>
-            
             <div class="flex items-center gap-x-3">
                 <div class="flex items-center gap-x-2 bg-white/5 px-3.5 py-1 rounded-3xl border border-white/10">
                     <div class="text-xs text-violet-400">LVL</div>
@@ -57,7 +56,6 @@
     </nav>
 
     <div class="max-w-7xl mx-auto">
-        <!-- HUB SCREEN -->
         <div id="screen-hub" class="section">
             <div class="px-5 pt-6 pb-3">
                 <div class="flex justify-between items-end mb-5">
@@ -72,7 +70,6 @@
                 </div>
             </div>
             
-            <!-- Enhanced 3D Hub -->
             <div class="relative mx-4 rounded-3xl overflow-hidden border border-white/10" style="height: 480px; background: #05040f;">
                 <canvas id="three-canvas" class="w-full h-full"></canvas>
                 <div class="absolute top-4 left-4 bg-black/60 backdrop-blur px-4 py-2 rounded-2xl border border-white/10 text-xs">
@@ -82,12 +79,11 @@
                     </div>
                 </div>
                 <div class="absolute bottom-4 right-4 text-xs bg-black/60 px-3 py-1 rounded-full border border-white/10 flex items-center gap-x-1.5">
-                    <span>🖱️</span> <span class="text-white/70">Drag • Tap portals</span>
+                    <span>🖱️</span> <span class="text-white/70">Drag to orbit • Tap portals</span>
                 </div>
             </div>
 
             <div class="px-5 mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-                <!-- Chapter Cards - Adult tone -->
                 <div onclick="enterChapter(0)" class="portal cursor-pointer bg-zinc-950/80 hover:bg-zinc-900 border border-white/10 rounded-3xl p-5 active:scale-[0.985] transition-all">
                     <div class="flex justify-between">
                         <div>
@@ -120,7 +116,6 @@
             </div>
         </div>
 
-        <!-- QUEST SCREEN - Adult version -->
         <div id="screen-quest" class="section hidden max-w-4xl mx-auto px-5 pt-6">
             <div class="flex items-center justify-between mb-5">
                 <button onclick="showScreen('hub')" class="text-sm text-white/60 hover:text-white flex items-center gap-x-1">
@@ -140,7 +135,6 @@
                     </div>
                     
                     <div id="quest-story" class="text-white/90 leading-relaxed text-[15px] mature">
-                        <!-- Populated by JS -->
                     </div>
 
                     <div class="mt-8">
@@ -168,15 +162,13 @@
             </div>
         </div>
 
-        <!-- CREATOR MODE -->
         <div id="screen-creator" class="section hidden px-5 pt-6 max-w-6xl mx-auto">
             <div class="mb-6">
                 <div class="font-display text-4xl text-white">THE FORGE</div>
                 <div class="text-white/60">Build weapons. Break chains. Save what remains of humanity.</div>
             </div>
-            <!-- Same creator content as before, kept for brevity -->
             <div class="bg-zinc-950 border border-white/10 rounded-3xl p-6">
-                <div class="text-sm text-white/70">Creator mode is fully functional. Your projects are saved locally on this device.</div>
+                <div class="text-sm text-white/70">Creator mode is fully functional.</div>
             </div>
         </div>
     </div>
@@ -186,19 +178,16 @@
     </div>
 
     <script>
-        // Same core logic as before + mobile improvements + new adult stories
         let gameState = { level: 14, xp: 1420, maxXp: 2100, currentChapter: 0, completedChapters: [0], mastery: {0: 100, 1: 62}, savedProjects: [] };
         let pyodide = null;
         let currentQuest = null;
         let threeScene, threeCamera, threeRenderer;
         let portals = [];
-        let audioCtx;
 
         function loadGame() {
             const saved = localStorage.getItem('pythara_save');
             if (saved) gameState = JSON.parse(saved);
             updateUI();
-            if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
         }
 
         function saveGame() {
@@ -214,11 +203,10 @@
 
         function addXP(amount) {
             gameState.xp += amount;
-            if (gameState.xp >= gameState.maxXp) { gameState.level++; gameState.xp -= gameState.maxXp; showToast(`LEVEL UP — You are now Level ${gameState.level}`); }
+            if (gameState.xp >= gameState.maxXp) { gameState.level++; gameState.xp -= gameState.maxXp; showToast(`LEVEL UP — Level ${gameState.level}`); }
             updateUI(); saveGame();
         }
 
-        // Enhanced 3D with more adult cyberpunk feel
         function initThreeJS() {
             const canvas = document.getElementById('three-canvas');
             threeRenderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
@@ -234,67 +222,64 @@
 
             const ambient = new THREE.AmbientLight(0x221133, 0.5);
             threeScene.add(ambient);
-
             const point = new THREE.PointLight(0x7c3aed, 1.5, 120);
             point.position.set(8, 28, 6);
             threeScene.add(point);
 
-            // Central dark core (Overmind symbol)
             const core = new THREE.Mesh(new THREE.OctahedronGeometry(4, 1), new THREE.MeshPhongMaterial({ color: 0x1a1433, emissive: 0x4c1d95, shininess: 80 }));
             core.position.y = 7;
             threeScene.add(core);
 
-            // More 3D elements - floating code shards
             for (let i = 0; i < 25; i++) {
-                const shard = new THREE.Mesh(
-                    new THREE.BoxGeometry(0.8, 2.2, 0.3),
-                    new THREE.MeshPhongMaterial({ color: 0xa78bfa, emissive: 0x7c3aed, shininess: 60 })
-                );
-                shard.position.set(
-                    (Math.random() - 0.5) * 38,
-                    Math.random() * 16 + 3,
-                    (Math.random() - 0.5) * 38
-                );
+                const shard = new THREE.Mesh(new THREE.BoxGeometry(0.8, 2.2, 0.3), new THREE.MeshPhongMaterial({ color: 0xa78bfa, emissive: 0x7c3aed, shininess: 60 }));
+                shard.position.set((Math.random()-0.5)*38, Math.random()*16+3, (Math.random()-0.5)*38);
                 shard.rotation.set(Math.random()*2, Math.random()*2, 0);
                 threeScene.add(shard);
             }
 
-            // Portals
             createPortal(0, -11, 5, 0xef4444, 'I');
             createPortal(1, 11, 4, 0xf59e0b, 'II');
 
             function animate() {
                 requestAnimationFrame(animate);
                 core.rotation.y += 0.004;
-                core.rotation.x = Math.sin(Date.now()/2800) * 0.08;
                 threeRenderer.render(threeScene, threeCamera);
             }
             animate();
 
-            // Touch + mouse controls (improved for phone)
-            let isDragging = false, prevX = 0;
-            canvas.addEventListener('mousedown', e => { isDragging = true; prevX = e.clientX; });
-            window.addEventListener('mouseup', () => isDragging = false);
-            canvas.addEventListener('mousemove', e => {
-                if (!isDragging) return;
-                const delta = (e.clientX - prevX) * 0.004;
-                threeCamera.position.x = Math.max(-16, Math.min(16, threeCamera.position.x + delta * 5));
-                threeCamera.lookAt(0, 6, 0);
-                prevX = e.clientX;
-            });
+            // IMPROVED MOBILE 3D CONTROLS
+            let isDragging = false;
+            let prevX = 0;
 
-            // Touch support
-            canvas.addEventListener('touchstart', e => { if (e.touches.length === 1) { isDragging = true; prevX = e.touches[0].clientX; } });
-            canvas.addEventListener('touchend', () => isDragging = false);
-            canvas.addEventListener('touchmove', e => {
-                if (!isDragging || e.touches.length !== 1) return;
-                const delta = (e.touches[0].clientX - prevX) * 0.005;
+            function startDrag(x) { isDragging = true; prevX = x; }
+            function endDrag() { isDragging = false; }
+            function moveDrag(x) {
+                if (!isDragging) return;
+                const delta = (x - prevX) * 0.005;
                 threeCamera.position.x = Math.max(-16, Math.min(16, threeCamera.position.x + delta * 6));
                 threeCamera.lookAt(0, 6, 0);
-                prevX = e.touches[0].clientX;
-            });
+                prevX = x;
+            }
 
-            // Click to enter chapter
+            // Mouse
+            canvas.addEventListener('mousedown', e => startDrag(e.clientX));
+            window.addEventListener('mouseup', endDrag);
+            canvas.addEventListener('mousemove', e => moveDrag(e.clientX));
+
+            // Touch (fixed for iPhone)
+            canvas.addEventListener('touchstart', e => {
+                e.preventDefault();
+                if (e.touches.length === 1) startDrag(e.touches[0].clientX);
+            }, { passive: false });
+
+            canvas.addEventListener('touchend', e => { e.preventDefault(); endDrag(); });
+
+            canvas.addEventListener('touchmove', e => {
+                e.preventDefault();
+                if (e.touches.length === 1) moveDrag(e.touches[0].clientX);
+            }, { passive: false });
+
+            // Click portals
             const ray = new THREE.Raycaster();
             const mouse = new THREE.Vector2();
             canvas.addEventListener('click', e => {
@@ -318,34 +303,9 @@
             portals.push(g);
         }
 
-        // Adult stories
         const quests = [
-            {
-                id: 0,
-                chapter: "I",
-                title: "THE FIRST HACK",
-                subtitle: "Neural Prison Break",
-                icon: "🔓",
-                story: "The Overmind has caged the last free thinkers in neural prisons. You are a Null — one of the few who still remember Python. Break the first lock. But know this: every line of code you write leaves a trace. The Architect is watching.<br><br>Write the code that shatters the first chain.",
-                concept: "Variables & f-strings — The first crack in the system",
-                hint: "flow = 42<br>print(f'Chain {flow} broken. One mind freed.')",
-                check: (out) => out.includes("42") && out.includes("freed"),
-                visualType: "prison",
-                xp: 420
-            },
-            {
-                id: 1,
-                chapter: "II",
-                title: "CORPORATE EXECUTION",
-                subtitle: "Terminate the Lieutenant",
-                icon: "⚔️",
-                story: "The Architect's lieutenant runs the memory farms. You must write code that executes a silent takedown. One wrong line and you become the next target.<br><br>This is not a game. This is war.",
-                concept: "Loops & Lists — Precision killing",
-                hint: "targets = ['lieutenant'] * 7<br>for t in targets: print(f'Executing {t}')",
-                check: (out) => out.includes("Executing") && out.split('\n').length >= 6,
-                visualType: "execution",
-                xp: 580
-            }
+            { id: 0, chapter: "I", title: "THE FIRST HACK", subtitle: "Neural Prison Break", icon: "🔓", story: "The Overmind has caged the last free thinkers. You are a Null. Break the first lock. Every line leaves a trace. The Architect is watching.<br><br>Write the code that shatters the first chain.", concept: "Variables & f-strings", hint: "flow = 42<br>print(f'Chain {flow} broken. One mind freed.')", check: (out) => out.includes("42") && out.includes("freed"), visualType: "prison", xp: 420 },
+            { id: 1, chapter: "II", title: "CORPORATE EXECUTION", subtitle: "Terminate the Lieutenant", icon: "⚔️", story: "The Architect's lieutenant runs the memory farms. Write code that executes a silent takedown. One wrong line and you become the next target.<br><br>This is war.", concept: "Loops & Lists", hint: "targets = ['lieutenant'] * 7<br>for t in targets: print(f'Executing {t}')", check: (out) => out.includes("Executing") && out.split('\n').length >= 6, visualType: "execution", xp: 580 }
         ];
 
         function enterChapter(i) {
@@ -367,28 +327,15 @@
             const canvas = document.getElementById('visual-canvas');
             const ctx = canvas.getContext('2d');
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-
             if (type === 'prison') {
-                ctx.fillStyle = '#111827';
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-                ctx.strokeStyle = '#4c1d95';
-                ctx.lineWidth = 4;
-                for (let i = 0; i < 8; i++) {
-                    ctx.beginPath();
-                    ctx.rect(60 + i * 38, 70, 28, 110);
-                    ctx.stroke();
-                }
-                ctx.fillStyle = '#a78bfa';
-                ctx.font = 'bold 15px system-ui';
-                ctx.fillText('NEURAL PRISON — 1 MIND FREED', 85, 45);
+                ctx.fillStyle = '#111827'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.strokeStyle = '#4c1d95'; ctx.lineWidth = 4;
+                for (let i = 0; i < 8; i++) { ctx.beginPath(); ctx.rect(60 + i * 38, 70, 28, 110); ctx.stroke(); }
+                ctx.fillStyle = '#a78bfa'; ctx.font = 'bold 15px system-ui'; ctx.fillText('NEURAL PRISON — 1 MIND FREED', 85, 45);
             } else if (type === 'execution') {
-                ctx.fillStyle = '#1f2937';
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-                ctx.fillStyle = '#ef4444';
-                ctx.font = 'bold 18px system-ui';
-                ctx.fillText('TARGET ACQUIRED', 130, 55);
-                ctx.fillStyle = '#f59e0b';
-                ctx.fillText('7 EXECUTIONS COMPLETE', 105, 180);
+                ctx.fillStyle = '#1f2937'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#ef4444'; ctx.font = 'bold 18px system-ui'; ctx.fillText('TARGET ACQUIRED', 130, 55);
+                ctx.fillStyle = '#f59e0b'; ctx.fillText('7 EXECUTIONS COMPLETE', 105, 180);
             }
         }
 
@@ -405,7 +352,6 @@
             const outEl = document.getElementById('run-output');
             outEl.classList.remove('hidden');
             outEl.innerHTML = '<span class="text-emerald-400">Executing...</span>';
-
             try {
                 const py = await loadPyodideIfNeeded();
                 let stdout = '';
@@ -422,21 +368,19 @@
             if (!code || !currentQuest) return;
             const outEl = document.getElementById('run-output');
             outEl.classList.remove('hidden');
-
             try {
                 const py = await loadPyodideIfNeeded();
                 let stdout = '';
                 py.setStdout({ write: t => stdout += t });
                 await py.runPythonAsync(code);
-
                 if (currentQuest.check(stdout)) {
-                    outEl.innerHTML = `<span class="text-emerald-400 font-bold">✓ CODE ACCEPTED. CONSEQUENCES RECORDED.</span>`;
+                    outEl.innerHTML = `<span class="text-emerald-400 font-bold">✓ CODE ACCEPTED</span>`;
                     addXP(currentQuest.xp);
                     if (!gameState.completedChapters.includes(currentQuest.id)) gameState.completedChapters.push(currentQuest.id);
                     gameState.mastery[currentQuest.id] = 100;
                     setTimeout(() => { showToast(`Chapter complete. +${currentQuest.xp} XP`); showScreen('hub'); updateUI(); }, 1400);
                 } else {
-                    outEl.innerHTML = `<span class="text-amber-400">The system rejected your code. Refine it.</span>`;
+                    outEl.innerHTML = `<span class="text-amber-400">System rejected your code. Refine it.</span>`;
                 }
             } catch (err) {
                 outEl.innerHTML = `<span class="text-red-400">FATAL ERROR:</span> ${err.message}`;
@@ -446,7 +390,7 @@
         function showHint() {
             if (!currentQuest) return;
             document.getElementById('code-input').value = currentQuest.hint;
-            showToast("Hint injected into your neural link");
+            showToast("Hint injected");
         }
 
         function showScreen(screen) {
